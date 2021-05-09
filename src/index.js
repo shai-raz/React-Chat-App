@@ -3,10 +3,16 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { AuthProvider } from './Auth';
+import { ConversationProvider } from './ConversationProvider';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <ConversationProvider>
+        <App />
+      </ConversationProvider>
+    </AuthProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

@@ -1,0 +1,28 @@
+header {
+    min-height: 59px;
+}
+
+footer {
+    min-height: 62px;
+}
+
+ul {
+    list-style-type: none;
+    display: block;
+}
+
+.msg {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    margin-bottom: 40px;
+    border: 1px solid gray;
+}
+
+.msg-left {
+    align-items: flex-start;
+}
+
+.msg-out {
+    align-items: flex-end;
+}
