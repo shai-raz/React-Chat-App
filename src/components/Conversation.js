@@ -10,11 +10,16 @@ import Message from './Message'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { comapreDateBySeconds } from '../HelperFunctions'
+import { useRef } from 'react'
 
 const Conversation = () => {
     const [currentConversation, setCurrentConversation] = useContext(ConversationContext)
     const { currentUser } = useContext(AuthContext)
+    const [msgsFrom, setMsgsFrom] = useState([]) // msgs sent from user (to currently active conversation)
+    const [msgsTo, setMsgsTo] = useState([]) // msgs sent to user (from currently active converstation)
     const [msgs, setMsgs] = useState([])
+
+    const conversationBottom = useRef()
 
     let userId = null
     if (currentUser) {
@@ -26,46 +31,64 @@ const Conversation = () => {
         friendId = currentConversation.id
     }
 
+    const scrollToBottom = () => {
+        conversationBottom.current.scrollIntoView({ behavior: "auto" });
+    }
+
     // fetch msgs from a given query snapshot
-    const fetchMsgs = (querySnapshot) => {
-        let newMsgs = [...msgs]
+    // fromUser: true is sent from user, false if sent to user
+    const fetchMsgs = (querySnapshot, fromUser) => {
+        let newMsgs = []
 
         querySnapshot.forEach((doc) => {
-            console.log(doc.id, " => ", doc.data())
+            //console.log(doc.id, " => ", doc.data())
             const data = doc.data()
 
             newMsgs.push(new Msg(data.content, data.from, data.to, data.date))
         })
-
-        return newMsgs
+        if (fromUser) {
+            setMsgsFrom(newMsgs)
+        } else {
+            setMsgsTo(newMsgs)
+        }
+        //return newMsgs
     }
 
     // fetch msgs from firebase db
     const fetchMsgsFromFirebase = () => {
-        const msgsCollectionFromUser = db.collection("msgs")
-            .where("from", "==", userId)
+        if (currentConversation) {
+            const msgsCollectionFromUser = db.collection("msgs")
+                .where("from", "==", userId)
+                .where("to", "==", currentConversation.id)
 
-        const msgsCollectionToUser = db.collection("msgs")
-            .where("to", "==", userId)
+            const msgsCollectionToUser = db.collection("msgs")
+                .where("to", "==", userId)
+                .where("from", "==", currentConversation.id)
 
-        let msgsFrom
-        let msgsTo
-        Promise.all([msgsCollectionFromUser.get(), msgsCollectionToUser.get()])
-            .then((values) => {
-                msgsFrom = fetchMsgs(values[0])
-                msgsTo = fetchMsgs(values[1])
-
-                let newMsgs = msgsFrom.concat(msgsTo)
-                newMsgs.sort(comapreDateBySeconds)
-                console.log(newMsgs)
-                setMsgs(newMsgs)
+            msgsCollectionFromUser.onSnapshot((querySnapshot) => {
+                fetchMsgs(querySnapshot, true)
+                scrollToBottom()
             })
+
+            msgsCollectionToUser.onSnapshot((querySnapshot) => {
+                fetchMsgs(querySnapshot, false)
+                scrollToBottom()
+            })
+        }
     }
 
-    // only fire once
+    // fetch msgs from firestore db whenever a conversation is selected
     useEffect(() => {
         fetchMsgsFromFirebase()
-    }, [])
+    }, [currentConversation])
+
+    /* whenever from/to msgs is changed (new data from firestore)
+       update the msgs state */
+    useEffect(()=> {
+        let newMsgs = msgsFrom.concat(msgsTo)
+        newMsgs.sort(comapreDateBySeconds)
+        setMsgs(newMsgs)
+    }, [msgsFrom, msgsTo])
 
     return (
         <div className={`row message`} id="conversation">
@@ -78,7 +101,7 @@ const Conversation = () => {
             </div>
             {
                 msgs.map((msg, i) => {
-                    let date = new Date(msg.date.seconds*1000)
+                    let date = new Date(msg.date.seconds * 1000)
                     let formattedDate = date.getHours() + ":" + date.getMinutes()
                     //let formattedDate = date.toLocaleDateString('en-US')
                     return <Message isSent={(msg.from == userId)}
@@ -87,6 +110,7 @@ const Conversation = () => {
                         key={i} />
                 })
             }
+            <div style={{ float: "left", clear: "both", height: "0%" }} ref={conversationBottom} />
         </div>
     )
 }
