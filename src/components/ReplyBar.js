@@ -15,8 +15,16 @@ const ReplyBar = () => {
     const { currentUser } = useContext(AuthContext)
     const msgContent = useRef()
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault()
+            sendMsg()
+        }
+    }
+
     const sendMsg = () => {
         const msgToSend = new Msg(msgContent.current.value, currentUser.id, currentConversation.id, new Date())
+        msgContent.current.value = ""
         console.log(msgToSend)
 
         db.collection("msgs")
@@ -26,6 +34,8 @@ const ReplyBar = () => {
                 to: msgToSend.to,
                 date: msgToSend.date
             })
+
+
     }
 
     return (
@@ -34,7 +44,9 @@ const ReplyBar = () => {
                 <FontAwesomeIcon icon={faSmile} size="2x" />
             </div>
             <div className={`col-sm-9 col-xs-9 reply-main`}>
-                <textarea className={`form-control`} rows="1" id="comment" ref={msgContent}></textarea>
+                <textarea className={`form-control`} rows="1" id="comment"
+                    ref={msgContent}
+                    onKeyDown={handleKeyDown}></textarea>
             </div>
             <div className={`col-sm-1 col-xs-1 centered-icon reply-recording`}>
                 <FontAwesomeIcon icon={faMicrophone} size="2x" />
