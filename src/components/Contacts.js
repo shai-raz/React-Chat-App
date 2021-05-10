@@ -5,60 +5,69 @@ import './css/style.css'
 import { db } from '../firebase'
 import { AuthContext } from '../Auth'
 import { User } from '../User'
+import { useContext } from 'react'
+import { useState } from 'react'
+import { useEffect } from 'react'
 
 
-class Contacts extends React.Component {
-    static contextType = AuthContext
+const Contacts = () => {
+    const { currentUser } = useContext(AuthContext)
+    const [friends, setFriends] = useState([])
 
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            friends: [],
+    const fetchContact = (doc, friendId) => {
+        //console.log(doc.data())
+        if (doc.exists) {
+            return new User(friendId, doc.data().email)
         }
+        return null
     }
 
-    componentDidMount() {
-        this.fetchContacts()
-    }
-
-    fetchContacts() {
-        const currentUser = this.context.currentUser
+    const fetchContacts = () => {
         const friendsCollection = db.collection("users")
             .doc(currentUser.id)
             .collection("friends")
 
-        let friendsCopy = this.state.friends.slice()
-
-        friendsCollection.get().then((querySnapshot) => {
+        // subsricbe to real-time changes on user's friends in the db
+        friendsCollection.onSnapshot((querySnapshot) => {
+            let friendsCopy = friends.slice()
+            let promises = []
+            let ids = []
             querySnapshot.forEach((doc) => {
                 const friendId = doc.id
+                console.log("friend id: " + friendId)
                 const friendDoc = db.collection("users")
                     .doc(friendId) // user id
 
-                friendDoc.get().then((doc) => {
-                    if (doc.exists) {
-                        const user = new User(friendId, doc.data().email)
-                        //console.log(user)
-                        friendsCopy.push(user)
-                        this.setState({ friends: friendsCopy })
-                    }
-                }).catch((err) => {
-                    console.log("couldn't find friend with id: " + friendId + " (" + err + ")")
-                })
+                promises.push(friendDoc.get())
+                ids.push(friendId)
             })
+            Promise.all(promises)
+                .then((values) => {
+                    values.forEach((doc, i) => {
+                        let fetchedContact = fetchContact(doc, ids[i])
+                        if (fetchedContact != null) {
+                            friendsCopy.push(fetchedContact)
+                        }
+                    })
+                    setFriends(friendsCopy)
+                })
         })
     }
 
-    render() {
-        return (
-            <div className={`row sideBar`}>
-                {this.state.friends.map((friend) => {
-                    return <Contact key={friend.id} user={friend} />
-                })}
-            </div>
-        )
-    }
+    // fetch contacts on mount(?) (only called once)
+    useEffect(() => {
+        fetchContacts()
+    }, [])
+
+    return (
+        <div className={`row sideBar`}>
+            {friends.map((friend) => {
+                console.log("sdfsdfsdfs")
+                console.log(friends)
+                return <Contact key={friend.id} user={friend} />
+            })}
+        </div>
+    )
 }
 
 export default Contacts
