@@ -88,6 +88,7 @@ const Conversation = () => {
         let newMsgs = msgsFrom.concat(msgsTo)
         newMsgs.sort(comapreDateBySeconds)
         setMsgs(newMsgs)
+        scrollToBottom()
     }, [msgsFrom, msgsTo])
 
     return (
