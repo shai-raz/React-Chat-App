@@ -23,19 +23,21 @@ const ReplyBar = () => {
     }
 
     const sendMsg = () => {
-        const msgToSend = new Msg(msgContent.current.value, currentUser.id, currentConversation.id, new Date())
-        msgContent.current.value = ""
-        console.log(msgToSend)
+        const content = msgContent.current.value
+        // if the message is empty, don't do anything
+        if (content !== null && content !== "") {
+            const msgToSend = new Msg(content, currentUser.id, currentConversation.id, new Date())
+            msgContent.current.value = ""
+            console.log(msgToSend)
 
-        db.collection("msgs")
-            .add({
-                content: msgToSend.content,
-                from: msgToSend.from,
-                to: msgToSend.to,
-                date: msgToSend.date
-            })
-
-
+            db.collection("msgs")
+                .add({
+                    content: msgToSend.content,
+                    from: msgToSend.from,
+                    to: msgToSend.to,
+                    date: msgToSend.date
+                })
+        }
     }
 
     return (

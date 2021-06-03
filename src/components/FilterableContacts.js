@@ -7,11 +7,11 @@ import Contacts from './Contacts'
 
 const FilterableContacts = () => {
     return (
-        <React.Fragment>
+        <>
             <ContactsHeader />
             <ContactsSearchBox />
             <Contacts />
-        </React.Fragment>
+        </>
     )
 }
 

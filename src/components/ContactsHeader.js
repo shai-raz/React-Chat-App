@@ -4,10 +4,11 @@ import ProfilePicture from './ProfilePicture'
 import '../css/bootstrap.min.css'
 import './css/style.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import { faSignOutAlt, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { useContext } from 'react'
 import { AuthContext } from '../Auth'
 import { getUserNameFromEmail } from '../HelperFunctions'
+import FormDialog from './FormDialog'
 
 const ContactsHeader = () => {
   const { currentUser } = useContext(AuthContext)
@@ -16,6 +17,10 @@ const ContactsHeader = () => {
 
   const signOut = () => {
     app.auth().signOut();
+  }
+
+  const addNewContact = () => {
+    alert('x')
   }
 
   return (
@@ -28,6 +33,12 @@ const ContactsHeader = () => {
       <div className={`col-sm-4 col-xs-4 heading-name-meta`}>
         {userEmailUserName}
       </div>
+      <div className={`col-sm-1 col-xs-1 centered-icon-end heading-dot pull-right`}>
+        <FontAwesomeIcon icon={faUserPlus} size="2x"
+          onClick={addNewContact}
+          role={`button`} />
+      </div>
+      <FormDialog />
       {/*<div className={`col-sm-1 col-xs-1 centered-icon-end heading-dot pull-right`}>
           <FontAwesomeIcon icon={faEllipsisV} size="2x" />
         </div>

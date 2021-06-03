@@ -8,17 +8,19 @@ import FilterableContacts from './FilterableContacts'
 
 const ChatApp = () => {
     return (
-        <div className={`container app`}>
-            <div className={`row app-one`}>
-                <div className={`col-sm-4 side`}>
-                    <div className={`side-one`}>
-                        <FilterableContacts />
+        <div style={{height: "100vh"}}>
+            <div className={`container app`}>
+                <div className={`row app-one`}>
+                    <div className={`col-sm-4 side`}>
+                        <div className={`side-one`}>
+                            <FilterableContacts />
+                        </div>
                     </div>
-                </div>
-                <div className={`col-sm-8 conversation`}>
-                    <ChatHeader />
-                    <Conversation />
-                    <ReplyBar />
+                    <div className={`col-sm-8 conversation`}>
+                        <ChatHeader />
+                        <Conversation />
+                        <ReplyBar />
+                    </div>
                 </div>
             </div>
         </div>
